@@ -1,47 +1,47 @@
 import "./pages/index.css";
-import { initialCards } from "./components/cards.js";
+import { initialCards } from "./components/initialCards.js";
 import { createCard, deleteCard, toggleLike } from "./components/cards.js";
 import { openPopup, closePopup, handleEscClose } from "./components/modal.js";
 
 const placesList = document.querySelector(".places__list");
-const popupEdit = document.querySelector(".popup_type_edit");
+const popupEditProfile = document.querySelector(".popup_type_edit");
 const popupAdd = document.querySelector(".popup_type_new-card");
 const popupImage = document.querySelector(".popup_type_image");
-const editButton = document.querySelector(".profile__edit-button");
-const addButton = document.querySelector(".profile__add-button");
+const editButtonProfile = document.querySelector(".profile__edit-button");
+const addButtonProfile = document.querySelector(".profile__add-button");
 const closeButtons = document.querySelectorAll(".popup__close");
 const imagePopupElement = popupImage.querySelector(".popup__image");
 const imagePopupCaption = popupImage.querySelector(".popup__caption");
-const formElement = popupEdit.querySelector(".popup__form");
-const nameInput = formElement.querySelector(".popup__input_type_name");
-const jobInput = formElement.querySelector(".popup__input_type_description");
+const profileForm = document.forms["edit-profile"];
+const nameInput = profileForm.querySelector(".popup__input_type_name");
+const jobInput = profileForm.querySelector(".popup__input_type_description");
 const profileTitle = document.querySelector(".profile__title");
 const profileDescription = document.querySelector(".profile__description");
-const formAddCard = popupAdd.querySelector(".popup__form");
+const formAddCard = document.forms["new-place"];
 const cardNameInput = formAddCard.querySelector(".popup__input_type_card-name");
 const cardLinkInput = formAddCard.querySelector(".popup__input_type_url");
 
-function renderCards(cards) {
-  cards.forEach((cardItem) => {
-    const cardElement = createCard(
-      cardItem,
-      deleteCard,
-      openImagePopup,
-      toggleLike
-    );
-    placesList.append(cardElement);
+function renderCard(cardData, method = "prepend") {
+  const cardElement = createCard({
+    cardData,
+    deleteCard,
+    handleImageClick: openImagePopup,
+    toggleLike,
   });
+
+  placesList[method](cardElement);
 }
 
-renderCards(initialCards);
+initialCards.forEach((cardItem) => renderCard(cardItem, "append"));
 
-editButton.addEventListener("click", () => {
+editButtonProfile.addEventListener("click", () => {
   nameInput.value = profileTitle.textContent;
   jobInput.value = profileDescription.textContent;
 
-  openPopup(popupEdit);
+  openPopup(popupEditProfile);
 });
-addButton.addEventListener("click", () => openPopup(popupAdd));
+
+addButtonProfile.addEventListener("click", () => openPopup(popupAdd));
 
 closeButtons.forEach((button) => {
   button.addEventListener("click", (evt) => {
@@ -65,16 +65,16 @@ function openImagePopup(data) {
   openPopup(popupImage);
 }
 
-function handleFormSubmit(evt) {
+function handleProfileFormSubmit(evt) {
   evt.preventDefault();
 
   profileTitle.textContent = nameInput.value;
   profileDescription.textContent = jobInput.value;
 
-  closePopup(popupEdit);
+  closePopup(popupEditProfile);
 }
 
-formElement.addEventListener("submit", handleFormSubmit);
+profileForm.addEventListener("submit", handleProfileFormSubmit);
 
 function handleAddCardSubmit(evt) {
   evt.preventDefault();
@@ -84,11 +84,10 @@ function handleAddCardSubmit(evt) {
     link: cardLinkInput.value,
   };
 
-  const newCard = createCard(newCardData, deleteCard, openImagePopup);
-  placesList.prepend(newCard);
+  renderCard(newCardData, "prepend");
 
   closePopup(popupAdd);
-
+  
   formAddCard.reset();
 }
 
