@@ -20,3 +20,12 @@
     line-height: 15px;
   }
 }
+
+.form__input_type_error {
+   border-bottom-color: red;
+}
+
+.form__input-error_active {
+  color: red;
+  font-size: 12px;
+}
