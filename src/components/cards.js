@@ -1,5 +1,4 @@
-import { addLike, removeLike, deleteCardFromServer } from "./API.js";
-import { openPopup } from "./modal.js";
+import { addLike, removeLike } from "./API.js";
 
 const cardTemplate = document.querySelector("#card-template").content;
 
@@ -29,9 +28,11 @@ export function createCard({
     (like) => like._id === currentUserId
   );
 
-  // Если лайкнут, добавляем класс активности
+  // Обновляем состояние кнопки лайка
   if (isLikedByUser) {
     likeButton.classList.add("card__like-button_is-active");
+  } else {
+    likeButton.classList.remove("card__like-button_is-active");
   }
 
   // Скрываем иконку удаления, если карточка чужая
@@ -39,57 +40,40 @@ export function createCard({
     deleteButton.style.display = "none";
   }
 
-  // Добавляем data-атрибуты
-  cardElement.dataset.cardId = cardData._id;
-  likeButton.dataset.cardId = cardData._id;
-
-  deleteButton.addEventListener("click", () => deleteCard(cardElement));
+  deleteButton.addEventListener("click", () => {
+    deleteCard(cardData._id, cardElement);
+  });
 
   cardImage.addEventListener("click", () => handleImageClick(cardData));
 
   // Обработчик для лайка
-  likeButton.addEventListener("click", toggleLike);
+  likeButton.addEventListener("click", () => {
+    toggleLike(cardData._id, likeButton, likeCount, currentUserId);
+  });
 
   return cardElement;
 }
 
-export function deleteCard(cardElement) {
-  const cardId = cardElement.dataset.cardId; // Получаем ID карточки
-
-  // Показываем попап подтверждения
-  const confirmPopup = document.querySelector(".popup_type_confirm");
-  openPopup(confirmPopup);
-
-  // Обработчик подтверждения удаления
-  const confirmForm = confirmPopup.querySelector(".popup__form");
-  confirmForm.addEventListener("submit", (evt) => {
-    evt.preventDefault();
-
-    deleteCardFromServer(cardId)
-      .then(() => {
-        cardElement.remove();
-        closePopup(confirmPopup);
-      })
-      .catch((err) => {
-        console.error("Ошибка при удалении карточки:", err);
-      });
-  });
-}
-
-export function toggleLike(evt) {
-  const likeButton = evt.target;
-  const likeCount = likeButton.nextElementSibling;
-  const cardId = likeButton.dataset.cardId;
-
+export function toggleLike(cardId, likeButton, likeCount, currentUserId) {
   const isLiked = likeButton.classList.contains("card__like-button_is-active");
 
-  // Выбираем функцию в зависимости от состояния лайка
   const likeAction = isLiked ? removeLike : addLike;
 
   likeAction(cardId)
     .then((updatedCard) => {
+      console.log("Ответ от сервера:", updatedCard);
+
+      // Проверяем, есть ли лайк от текущего пользователя
+      const isLikedByUser = updatedCard.likes.some(
+        (like) => like._id === currentUserId
+      );
+
       // Обновляем состояние кнопки лайка
-      likeButton.classList.toggle("card__like-button_is-active");
+      if (isLikedByUser) {
+        likeButton.classList.add("card__like-button_is-active");
+      } else {
+        likeButton.classList.remove("card__like-button_is-active");
+      }
 
       // Обновляем счётчик лайков
       likeCount.textContent = updatedCard.likes.length;

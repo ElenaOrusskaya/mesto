@@ -1,5 +1,3 @@
-const nameRegex = /^[a-zA-Zа-яА-Я\s\-]+$/;
-
 const showInputError = (formElement, formInput, errorMessage, config) => {
   const formError = formElement.querySelector(`.${formInput.id}-error`);
   formInput.classList.add(config.inputErrorClass);
@@ -16,20 +14,12 @@ const hideInputError = (formElement, formInput, config) => {
 
 const isValid = (formElement, formInput, config) => {
   if (formInput.validity.valueMissing) {
+    showInputError(formElement, formInput, formInput.validationMessage, config);
+  } else if (formInput.validity.patternMismatch) {
     showInputError(
       formElement,
       formInput,
-      formInput.dataset.errorMessage || "Вы пропустили это поле.",
-      config
-    );
-  } else if (
-    formInput.dataset.validation === "regex" &&
-    !nameRegex.test(formInput.value)
-  ) {
-    showInputError(
-      formElement,
-      formInput,
-      "Разрешены только латинские, кириллические буквы, знаки дефиса и пробелы.",
+      formInput.dataset.errorMessage,
       config
     );
   } else if (!formInput.validity.valid) {
@@ -42,9 +32,7 @@ const isValid = (formElement, formInput, config) => {
 const hasInvalidInput = (inputList) => {
   return inputList.some(
     (formInput) =>
-      !formInput.validity.valid ||
-      (formInput.dataset.validation === "regex" &&
-        !nameRegex.test(formInput.value))
+      !formInput.validity.valid || formInput.validity.patternMismatch
   );
 };
 
@@ -74,10 +62,6 @@ const enableValidation = (config) => {
   const formList = Array.from(document.querySelectorAll(config.formSelector));
 
   formList.forEach((formElement) => {
-    formElement.addEventListener("submit", function (evt) {
-      evt.preventDefault();
-    });
-
     setEventListeners(formElement, config);
   });
 };
@@ -92,23 +76,7 @@ const clearValidation = (formElement, config) => {
     hideInputError(formElement, formInput, config);
   });
 
-  formButton.disabled = true;
-  formButton.classList.add(config.inactiveButtonClass);
-};
-
-export const checkImageUrl = (url) => {
-  return fetch(url, { method: "HEAD" })
-    .then((res) => {
-      if (!res.ok) {
-        throw new Error("Ошибка при загрузке изображения");
-      }
-      const contentType = res.headers.get("Content-Type");
-      if (!contentType || !contentType.startsWith("image/")) {
-        throw new Error("Ссылка не ведет на изображение");
-      }
-      return true;
-    })
-    .catch(() => false);
+  toggleButtonState(inputList, formButton, config);
 };
 
 export { enableValidation, clearValidation, isValid, showInputError };

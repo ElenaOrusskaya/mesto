@@ -6,8 +6,9 @@ import {
   updateProfileInfo,
   addNewCard,
   updateAvatar,
+  deleteCardFromServer,
 } from "./components/API.js";
-import { createCard, deleteCard, toggleLike } from "./components/cards.js";
+import { createCard, toggleLike } from "./components/cards.js";
 import { openPopup, closePopup, handleEscClose } from "./components/modal.js";
 import {
   enableValidation,
@@ -41,6 +42,35 @@ const profileImageContainer = document.querySelector(
 const popupAvatar = document.querySelector(".popup_type_avatar");
 const avatarForm = document.forms["update-avatar"];
 const avatarLinkInput = avatarForm.querySelector(".popup__input_type_url");
+const profileAvatar = document.querySelector(".profile__image");
+let cardIdToDelete;
+let cardElementToDelete;
+
+function deleteCard(cardId, cardElement) {
+  const confirmPopup = document.querySelector(".popup_type_confirm");
+
+  cardIdToDelete = cardId;
+  cardElementToDelete = cardElement;
+
+  openPopup(confirmPopup);
+}
+
+const confirmPopup = document.querySelector(".popup_type_confirm");
+const confirmForm = confirmPopup.querySelector(".popup__form");
+confirmForm.addEventListener("submit", (evt) => {
+  evt.preventDefault();
+
+  deleteCardFromServer(cardIdToDelete)
+    .then(() => {
+      if (cardElementToDelete) {
+        cardElementToDelete.remove();
+      }
+      closePopup(confirmPopup);
+    })
+    .catch((err) => {
+      console.error("Ошибка при удалении карточки:", err);
+    });
+});
 
 function renderCard(cardData, method = "prepend", currentUserId) {
   const cardElement = createCard({
@@ -59,10 +89,6 @@ editButtonProfile.addEventListener("click", () => {
   jobInput.value = profileDescription.textContent;
 
   clearValidation(profileForm, validationConfig);
-  // Проверяем валидность данных и устанавливаем состояние кнопки
-  const inputList = Array.from(profileForm.querySelectorAll(".popup__input"));
-  const formButton = profileForm.querySelector(".popup__button");
-  toggleButtonState(inputList, formButton, validationConfig);
 
   openPopup(popupEditProfile);
 });
@@ -97,10 +123,9 @@ function openImagePopup(data) {
 function handleProfileFormSubmit(evt) {
   evt.preventDefault();
 
-  const submitButton = profileForm.querySelector(".popup__button");
-  const initialButtonText = submitButton.textContent; // Сохраняем исходный текст кнопки
+  const submitButton = evt.submitter;
+  const initialButtonText = submitButton.textContent;
 
-  // Меняем текст кнопки на "Сохранение..."
   submitButton.textContent = "Сохранение...";
 
   const newName = nameInput.value;
@@ -108,7 +133,6 @@ function handleProfileFormSubmit(evt) {
 
   updateProfileInfo(newName, newAbout)
     .then((userData) => {
-      // Обновляем данные на странице после успешного ответа от сервера
       profileTitle.textContent = userData.name;
       profileDescription.textContent = userData.about;
 
@@ -118,7 +142,6 @@ function handleProfileFormSubmit(evt) {
       console.error("Ошибка при обновлении профиля:", err);
     })
     .finally(() => {
-      // Возвращаем исходный текст кнопки
       submitButton.textContent = initialButtonText;
     });
 }
@@ -129,9 +152,8 @@ function handleAddCardSubmit(evt) {
   evt.preventDefault();
 
   const submitButton = formAddCard.querySelector(".popup__button");
-  const initialButtonText = submitButton.textContent; // Сохраняем исходный текст кнопки
+  const initialButtonText = submitButton.textContent;
 
-  // Меняем текст кнопки на "Сохранение..."
   submitButton.textContent = "Сохранение...";
 
   const newCardData = {
@@ -142,24 +164,15 @@ function handleAddCardSubmit(evt) {
   // Отправляем данные на сервер
   addNewCard(newCardData.name, newCardData.link)
     .then((cardData) => {
-      // Отрисовываем карточку на странице после успешного ответа от сервера
       renderCard(cardData, "prepend", currentUserId);
 
-      // Сбрасываем форму
       formAddCard.reset();
       closePopup(popupAdd);
-      // Управляем состоянием кнопки отправки формы
-      const inputList = Array.from(
-        formAddCard.querySelectorAll(".popup__input")
-      );
-      const formButton = formAddCard.querySelector(".popup__button");
-      toggleButtonState(inputList, formButton, validationConfig);
     })
     .catch((err) => {
       console.error("Ошибка при добавлении карточки:", err);
     })
     .finally(() => {
-      // Возвращаем исходный текст кнопки
       submitButton.textContent = initialButtonText;
     });
 }
@@ -178,22 +191,25 @@ const validationConfig = {
 enableValidation(validationConfig);
 
 // Загрузка данных при загрузке страницы
-document.addEventListener("DOMContentLoaded", () => {
-  Promise.all([getUserInfo(), getInitialCards()])
-    .then(([userData, cardsData]) => {
-      currentUserId = userData._id;
-      // Обновляем информацию о пользователе
-      updateUserInfo(userData);
+Promise.all([getUserInfo(), getInitialCards()])
+  .then(([userData, cardsData]) => {
+    currentUserId = userData._id;
+    // Обновляем информацию о пользователе
+    const profileTitle = document.querySelector(".profile__title");
+    const profileDescription = document.querySelector(".profile__description");
+    const profileAvatar = document.querySelector(".profile__image");
 
-      // Отрисовываем карточки
-      cardsData.forEach((card) => {
-        renderCard(card, "append", currentUserId);
-      });
-    })
-    .catch((err) => {
-      console.error("Ошибка при загрузке данных:", err);
+    profileTitle.textContent = userData.name;
+    profileDescription.textContent = userData.about;
+    profileAvatar.style.backgroundImage = `url(${userData.avatar})`;
+    // Отрисовываем карточки
+    cardsData.forEach((card) => {
+      renderCard(card, "append", currentUserId);
     });
-});
+  })
+  .catch((err) => {
+    console.error("Ошибка при загрузке данных:", err);
+  });
 
 profileImageContainer.addEventListener("click", () => {
   openPopup(popupAvatar);
@@ -205,46 +221,26 @@ profileImageContainer.addEventListener("click", () => {
   openPopup(popupAvatar);
 });
 
-// Валидация поля ввода ссылки на аватар
-avatarLinkInput.addEventListener("input", () => {
-  isValid(avatarForm, avatarLinkInput, validationConfig);
-  toggleButtonState(
-    [avatarLinkInput],
-    avatarForm.querySelector(".popup__button"),
-    validationConfig
-  );
-});
-
 // Обработчик отправки формы обновления аватара
 avatarForm.addEventListener("submit", (evt) => {
   evt.preventDefault();
 
   const submitButton = avatarForm.querySelector(".popup__button");
-  const initialButtonText = submitButton.textContent; // Сохраняем исходный текст кнопки
+  const initialButtonText = submitButton.textContent;
 
-  // Меняем текст кнопки на "Сохранение..."
   submitButton.textContent = "Сохранение...";
 
   const avatarUrl = avatarLinkInput.value;
 
-  // Убираем проверку через checkImageUrl
   updateAvatar(avatarUrl)
     .then((userData) => {
-      const profileAvatar = document.querySelector(".profile__image");
       profileAvatar.style.backgroundImage = `url(${userData.avatar})`;
       closePopup(popupAvatar);
     })
     .catch((err) => {
       console.error("Ошибка при обновлении аватара:", err);
-      showInputError(
-        avatarForm,
-        avatarLinkInput,
-        "Не удалось обновить аватар.",
-        validationConfig
-      );
     })
     .finally(() => {
-      // Возвращаем исходный текст кнопки
       submitButton.textContent = initialButtonText;
     });
 });

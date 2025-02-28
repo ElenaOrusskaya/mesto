@@ -59,7 +59,8 @@
               required
               minlength="2"
               maxlength="40"
-              data-validation="regex"
+              pattern="^[a-zA-Zа-яА-Я\s\-]+$"
+              data-error-message="Разрешены только латинские, кириллические буквы, знаки дефиса и пробелы."
             />
             <span class="username-input-error form__input-error"></span>
             <input
@@ -71,7 +72,8 @@
               required
               minlength="2"
               maxlength="200"
-              data-validation="regex"
+              pattern="^[a-zA-Zа-яА-Я\s\-]+$"
+              data-error-message="Разрешены только латинские, кириллические буквы, знаки дефиса и пробелы."
             />
             <span class="description-input-error form__input-error"></span>
             <button type="submit" class="button popup__button">
@@ -94,7 +96,8 @@
               required
               minlength="2"
               maxlength="30"
-              data-validation="regex"
+              pattern="^[a-zA-Zа-яА-Я\s\-]+$"
+              data-error-message="Разрешены только латинские, кириллические буквы, знаки дефиса и пробелы."            
             />
             <span class="input-title-error form__input-error"></span>
             <input
