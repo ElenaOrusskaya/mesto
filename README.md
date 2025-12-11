@@ -1,38 +1,86 @@
-# Проектная работа Mesto
+# Mesto
 
-**Mesto** — это интерактивная страница, где пользователи могут делиться фотографиями, ставить лайки и редактировать свой профиль. Проект реализован с использованием современных веб-технологий и адаптирован для различных устройств.
+**Mesto** is an interactive photo-sharing page where users can edit their profile, update their avatar, add new cards, like photos, and delete their own posts.  
+The project is built with modern web technologies, follows a modular JavaScript architecture, and is fully responsive across devices.
 
-👉 [Посмотреть проект в GitHub Pages](https://elenaorusskaya.github.io/mesto)
-
----
-
-## Функциональность
-
-- **Редактирование профиля:**
-  - Изменение имени и описания пользователя.
-  - Обновление аватара.
-- **Добавление карточек:**
-  - Возможность добавлять новые карточки с фотографиями и подписями.
-- **Лайки:**
-  - Пользователи могут ставить и удалять лайки на карточках.
-- **Удаление карточек:**
-  - Пользователь может удалять свои карточки.
-- **Попапы:**
-  - Все формы (редактирование профиля, добавление карточки, обновление аватара) открываются в модальных окнах (попапах).
-- **Валидация форм:**
-  - Все формы валидируются перед отправкой.
+👉 [View the project on GitHub Pages](https://elenaorusskaya.github.io/mesto)
 
 ---
 
-## Технологии
+## ✨ Features
+
+### **Profile Editing**
+- Update user name and bio  
+- Change profile avatar  
+
+### **Card Functionality**
+- Add new photo cards with a title  
+- Like and unlike cards  
+- Delete your own cards  
+
+### **Popups / Modals**
+- All forms (edit profile, add card, update avatar) open in popup windows  
+- Smooth open/close interactions  
+
+### **Form Validation**
+- Client-side validation for all forms before submission  
+- Error messages and button disabling  
+
+### **API Integration**
+- Load user data from the server  
+- Load initial cards  
+- Update profile info  
+- Add new cards  
+- Manage likes  
+- Delete cards  
+
+---
+
+## 🛠 Technologies Used
 
 - **HTML5**
-- **CSS3** (Flexbox, Grid Layout, анимации, медиазапросы для адаптивной вёрстки)
-- **JavaScript** (ES6+):
-  - Работа с DOM.
-  - Обработка событий.
-  - Валидация форм.
-  - Работа с API (запросы на сервер для получения и обновления данных).
-- **Webpack** (сборка проекта, минификация и оптимизация кода).
-- **БЭМ** (организация CSS и структуры проекта).
-- **Git** (система контроля версий).
+- **CSS3**  
+  - Flexbox  
+  - Grid Layout  
+  - Animations  
+  - Media queries for responsive design  
+
+- **JavaScript (ES6+)**
+  - DOM manipulation  
+  - Event handling  
+  - Form validation  
+  - Working with REST API (GET, POST, PATCH, DELETE)
+
+- **Webpack**
+  - Project bundling  
+  - Code optimization and minification  
+
+- **BEM Methodology**
+  - Block–Element–Modifier CSS structure  
+
+- **Git**
+  - Version control and project history management  
+
+---
+
+## ▶️ How to Run the Project
+
+### 1. Clone the repository
+```bash
+git clone https://github.com/ElenaOrusskaya/mesto.git
+cd mesto
+```
+
+### 2. Install dependencies
+```
+npm install
+```
+
+### 3. Start the development server
+```
+npm run dev
+```
+
+### 4. Build the project for production
+```
+npm run build
